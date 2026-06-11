@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateCustomizerSession } from "../store/clockSlice";
 
-export default function ClockPreview({ onSelectPhoto, customSession }) {
+export default function ClockPreview({ onSelectPhoto, onRemovePhoto, customSession }) {
   const dispatch = useDispatch();
   const session = useSelector((state) => state.clock.customizerSession);
 
@@ -353,6 +353,17 @@ export default function ClockPreview({ onSelectPhoto, customSession }) {
               <rect x={right - 6} y={bottom - 6} width="12" height="12" fill="#ffffff" stroke="#3b82f6" strokeWidth="1.5" className="cursor-nwse-resize pointer-events-auto" onMouseDown={handleScaleStart} onTouchStart={handleScaleStart} />
               <line x1="200" y1={top} x2="200" y2={top - 30} stroke="#3b82f6" strokeWidth="1.5" strokeDasharray="2,2" />
               <circle cx="200" cy={top - 30} r="6" fill="#ffffff" stroke="#3b82f6" strokeWidth="1.5" className="cursor-alias pointer-events-auto" onMouseDown={handleRotateStart} onTouchStart={handleRotateStart} />
+              <g 
+                className="cursor-pointer pointer-events-auto" 
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onRemovePhoto();
+                }}
+              >
+                <circle cx={right + 12} cy={top - 12} r="10" fill="#ef4444" stroke="#ffffff" strokeWidth="1.5" />
+                <path d={`M ${right + 7} ${top - 17} L ${right + 17} ${top - 7} M ${right + 17} ${top - 17} L ${right + 7} ${top - 7}`} stroke="#ffffff" strokeWidth="2" strokeLinecap="round" />
+              </g>
             </g>
           )}
 
