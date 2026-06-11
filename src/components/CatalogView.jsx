@@ -1,4 +1,4 @@
-import { FaClock, FaCoffee, FaPen, FaIdCard, FaImage, FaFileAlt, FaBookOpen } from "react-icons/fa";
+import { FaClock, FaCoffee, FaPen, FaIdCard, FaImage, FaFileAlt } from "react-icons/fa";
 
 const PRODUCTS = [
   {

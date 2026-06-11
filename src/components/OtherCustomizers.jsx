@@ -1,5 +1,5 @@
 import { useState, useRef } from "react";
-import { FaUpload, FaUndo, FaFont, FaImage, FaPalette, FaShapes, FaRulerCombined } from "react-icons/fa";
+import { FaUpload, FaUndo, FaFont, FaImage, FaPalette, FaShapes, FaRulerCombined, FaCube } from "react-icons/fa";
 
 const MUG_DESIGNS = [
   { id: "standard", label: "Classic Mug" },
@@ -45,13 +45,23 @@ const PRESET_COLORS = [
 export default function OtherCustomizers({ productId }) {
   const fileInputRef = useRef(null);
   const [activeFrameSlot, setActiveFrameSlot] = useState(0);
+  const [is3D, setIs3D] = useState(false);
+
+  const get3DStyle = () => {
+    if (!is3D) return {};
+    return {
+      transform: "perspective(1000px) rotateX(15deg) rotateY(-20deg) rotateZ(3deg)",
+      transformStyle: "preserve-3d",
+      transition: "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+      filter: "drop-shadow(15px 20px 25px rgba(15, 23, 42, 0.15))"
+    };
+  };
 
   const [mugDesign, setMugDesign] = useState("standard");
   const [penDesign, setPenDesign] = useState("classic");
   const [plateDesign, setPlateDesign] = useState("rectangle");
   const [frameDesign, setFrameDesign] = useState("oak");
   const [letterheadDesign, setLetterheadDesign] = useState("modern");
-  const [notebookDesign, setNotebookDesign] = useState("classic");
 
   const [mugSize, setMugSize] = useState("11 Oz");
   const [mugText, setMugText] = useState("Coffee Time");
@@ -87,11 +97,6 @@ export default function OtherCustomizers({ productId }) {
   const [letterheadAddress, setLetterheadAddress] = useState("123 Innovation Way, Tech Park");
   const [letterheadImage, setLetterheadImage] = useState({ url: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 });
 
-  const [notebookSize, setNotebookSize] = useState("A5");
-  const [notebookWire, setNotebookWire] = useState("#c0c0c0");
-  const [notebookTitle, setNotebookTitle] = useState("My Daily Thoughts");
-  const [notebookImage, setNotebookImage] = useState({ url: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 });
-
   const handleFileChange = (e) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -102,8 +107,6 @@ export default function OtherCustomizers({ productId }) {
         setPenImage((prev) => ({ ...prev, url }));
       } else if (productId === "letterhead") {
         setLetterheadImage((prev) => ({ ...prev, url }));
-      } else if (productId === "notebook") {
-        setNotebookImage((prev) => ({ ...prev, url }));
       } else if (productId === "frame") {
         setFrameImages((prev) => ({
           ...prev,
@@ -124,8 +127,6 @@ export default function OtherCustomizers({ productId }) {
       setPenImage({ url: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 });
     } else if (productId === "letterhead") {
       setLetterheadImage({ url: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 });
-    } else if (productId === "notebook") {
-      setNotebookImage({ url: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 });
     } else if (productId === "frame") {
       setFrameImages((prev) => ({
         ...prev,
@@ -151,10 +152,6 @@ export default function OtherCustomizers({ productId }) {
 
   const handleLetterheadImageUpdate = (fields) => {
     setLetterheadImage((prev) => ({ ...prev, ...fields }));
-  };
-
-  const handleNotebookImageUpdate = (fields) => {
-    setNotebookImage((prev) => ({ ...prev, ...fields }));
   };
 
   const handleFrameImageUpdate = (slotIdx, fields) => {
@@ -203,10 +200,48 @@ export default function OtherCustomizers({ productId }) {
         onChange={handleFileChange}
       />
 
+      <style>{`
+        @keyframes rotate3d {
+          from {
+            transform: perspective(1000px) rotateX(15deg) rotateY(0deg) rotateZ(3deg);
+          }
+          to {
+            transform: perspective(1000px) rotateX(15deg) rotateY(360deg) rotateZ(3deg);
+          }
+        }
+        .animate-rotate-3d {
+          animation: rotate3d 16s linear infinite;
+        }
+      `}</style>
+
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
-        <div className="lg:col-span-6 bg-white rounded-3xl border border-slate-200/60 shadow-md p-5 flex flex-col items-center justify-center h-full min-h-[460px]">
+        <div className="lg:col-span-6 bg-white rounded-3xl border border-slate-200/60 shadow-md p-5 flex flex-col items-center justify-center h-full min-h-[460px] relative overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setIs3D(!is3D)}
+            className={`absolute top-4 right-4 z-10 py-1.5 px-3 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shadow-xs border flex items-center gap-1.5 cursor-pointer ${
+              is3D 
+                ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20" 
+                : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            <FaCube />
+            <span>{is3D ? "3D View Active" : "View in 3D"}</span>
+          </button>
+
+          {is3D && (
+            <div 
+              className="absolute bottom-12 w-1/2 h-4 bg-slate-900/10 rounded-full blur-md transition-all duration-700 pointer-events-none"
+              style={{
+                transform: "rotateX(75deg)",
+                mixBlendMode: "multiply"
+              }}
+            />
+          )}
+
           {productId === "mug" && (
-            <div className={`w-full max-w-[320px] transition-transform duration-500 ease-out transform ${getMugScale()}`}>
+            <div style={get3DStyle()} className={is3D ? "animate-rotate-3d w-full flex justify-center" : "w-full flex justify-center"}>
+              <div className={`w-full max-w-[320px] transition-transform duration-500 ease-out transform ${getMugScale()}`}>
               <svg viewBox="0 0 400 400" className="w-full">
                 <defs>
                   <clipPath id="mug-clip-rect">
@@ -266,11 +301,13 @@ export default function OtherCustomizers({ productId }) {
                   </text>
                 )}
               </svg>
+              </div>
             </div>
           )}
 
           {productId === "pen" && (
-            <div className={`w-full max-w-[320px] transition-transform duration-500 ease-out transform rotate-12 ${getPenScale()}`}>
+            <div style={get3DStyle()} className={is3D ? "animate-rotate-3d w-full flex justify-center" : "w-full flex justify-center"}>
+              <div className={`w-full max-w-[320px] transition-transform duration-500 ease-out transform rotate-12 ${getPenScale()}`}>
               <svg viewBox="0 0 400 400" className="w-full">
                 <defs>
                   <clipPath id="pen-clip">
@@ -329,11 +366,13 @@ export default function OtherCustomizers({ productId }) {
                   </text>
                 )}
               </svg>
+              </div>
             </div>
           )}
 
           {productId === "plate" && (
-            <div className={`w-full max-w-[320px] transition-transform duration-500 ease-out transform ${getPlateScale()}`}>
+            <div style={get3DStyle()} className={is3D ? "animate-rotate-3d w-full flex justify-center" : "w-full flex justify-center"}>
+              <div className={`w-full max-w-[320px] transition-transform duration-500 ease-out transform ${getPlateScale()}`}>
               <svg viewBox="0 0 400 400" className="w-full">
                 {plateDesign === "rectangle" && (
                   <rect x="30" y="120" width="340" height="160" rx="8" fill="#f8fafc" fillOpacity="0.8" stroke="#cbd5e1" strokeWidth="4" />
@@ -363,11 +402,13 @@ export default function OtherCustomizers({ productId }) {
                   </text>
                 )}
               </svg>
+              </div>
             </div>
           )}
 
           {productId === "frame" && (
-            <div className={`w-full max-w-[320px] transition-transform duration-500 ease-out transform ${getFrameScale()}`}>
+            <div style={get3DStyle()} className={is3D ? "animate-rotate-3d w-full flex justify-center" : "w-full flex justify-center"}>
+              <div className={`w-full max-w-[320px] transition-transform duration-500 ease-out transform ${getFrameScale()}`}>
               <svg viewBox="0 0 400 400" className="w-full">
                 <defs>
                   <clipPath id="frame-clip-2x2-0">
@@ -520,11 +561,13 @@ export default function OtherCustomizers({ productId }) {
                   </>
                 )}
               </svg>
+              </div>
             </div>
           )}
 
           {productId === "letterhead" && (
-            <div className={`w-full max-w-[280px] aspect-[1/1.414] bg-white border border-slate-300 shadow-lg p-5 flex flex-col justify-between text-left transition-transform duration-500 ease-out transform ${getLetterheadScale()}`}>
+            <div style={get3DStyle()} className={is3D ? "animate-rotate-3d w-full flex justify-center" : "w-full flex justify-center"}>
+              <div className={`w-full max-w-[280px] aspect-[1/1.414] bg-white border border-slate-300 shadow-lg p-5 flex flex-col justify-between text-left transition-transform duration-500 ease-out transform ${getLetterheadScale()}`}>
               <div className={`border-b border-slate-200 pb-3 flex items-start ${letterheadDesign === "sidebar" ? "flex-col gap-2" : "justify-between"}`}>
                 {letterheadDesign === "corporate" && (
                   <div className="w-full text-center border-b border-amber-500/20 pb-2 mb-2">
@@ -595,78 +638,7 @@ export default function OtherCustomizers({ productId }) {
               <div className="border-t border-slate-100 pt-2 text-right">
                 <span className="text-[6px] text-slate-400 font-bold uppercase tracking-widest">Acme Official Document</span>
               </div>
-            </div>
-          )}
-
-          {productId === "notebook" && (
-            <div className={`w-full max-w-[320px] transition-transform duration-500 ease-out transform ${getNotebookScale()}`}>
-              <svg viewBox="0 0 400 400" className="w-full">
-                <defs>
-                  <clipPath id="notebook-clip">
-                    <rect x="85" y="90" width="200" height="220" rx="6" />
-                  </clipPath>
-                  <pattern id="notebook-dots" x="0" y="0" width="10" height="10" patternUnits="userSpaceOnUse">
-                    <circle cx="5" cy="5" r="1" fill="#475569" />
-                  </pattern>
-                </defs>
-
-                <path d="M 60,80 L 75,80 C 75,80 75,320 75,320 L 60,320 Z" fill={notebookWire} />
-                {Array.from({ length: 12 }).map((_, i) => (
-                  <rect key={i} x="50" y={95 + i * 18} width="20" height="4" rx="2" fill="#cbd5e1" stroke="#94a3b8" strokeWidth="1" />
-                ))}
-
-                <rect x="75" y="80" width="220" height="240" rx="10" fill="#475569" stroke="#334155" strokeWidth="2" />
-
-                <g clipPath="url(#notebook-clip)">
-                  {notebookImage.url ? (
-                    <image
-                      href={notebookImage.url}
-                      x={85 - (200 * (notebookImage.zoom - 1)) / 2}
-                      y={90 - (220 * (notebookImage.zoom - 1)) / 2}
-                      width={200 * notebookImage.zoom}
-                      height={220 * notebookImage.zoom}
-                      transform={`translate(${notebookImage.xOffset}, ${notebookImage.yOffset}) rotate(${notebookImage.rotation} 185 200)`}
-                      preserveAspectRatio="xMidYMid slice"
-                    />
-                  ) : (
-                    <>
-                      {notebookDesign === "classic" && <rect x="85" y="90" width="200" height="220" fill="#1e293b" />}
-                      {notebookDesign === "dotted" && (
-                        <>
-                          <rect x="85" y="90" width="200" height="220" fill="#f8fafc" />
-                          <rect x="85" y="90" width="200" height="220" fill="url(#notebook-dots)" />
-                        </>
-                      )}
-                      {notebookDesign === "planner" && (
-                        <>
-                          <rect x="85" y="90" width="200" height="110" fill="#1e3a8a" />
-                          <rect x="85" y="200" width="200" height="110" fill="#ffffff" />
-                          <rect x="85" y="196" width="200" height="8" fill="#d4af37" />
-                        </>
-                      )}
-                    </>
-                  )}
-                </g>
-
-                <use href="#notebook-clip" className="fill-none stroke-slate-700/30 stroke-1" />
-
-                {notebookTitle && (
-                  <g>
-                    {notebookDesign === "dotted" ? (
-                      <>
-                        <rect x="125" y="250" width="120" height="30" rx="4" fill="#ffffff" stroke="#475569" strokeWidth="1.5" />
-                        <text x="185" y="269" textAnchor="middle" fill="#0f172a" className="font-heading font-black text-[10px]">
-                          {notebookTitle}
-                        </text>
-                      </>
-                    ) : (
-                      <text x="185" y="275" textAnchor="middle" fill={notebookDesign === "planner" ? "#0f172a" : "#ffffff"} className="font-heading font-black text-sm drop-shadow-[0_1px_2px_rgba(0,0,0,0.5)]">
-                        {notebookTitle}
-                      </text>
-                    )}
-                  </g>
-                )}
-              </svg>
+              </div>
             </div>
           )}
         </div>
@@ -679,7 +651,6 @@ export default function OtherCustomizers({ productId }) {
               {productId === "plate" && "Acrylic Name Plate Studio"}
               {productId === "frame" && "Collage Frame Studio"}
               {productId === "letterhead" && "Letterhead Designer"}
-              {productId === "notebook" && "Notebook Cover Studio"}
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5">Customize your executive personalized gear in real-time.</p>
           </div>
@@ -711,10 +682,6 @@ export default function OtherCustomizers({ productId }) {
               {productId === "letterhead" && LETTERHEAD_DESIGNS.map((des) => (
                 <button key={des.id} type="button" onClick={() => setLetterheadDesign(des.id)} className={`py-1.5 px-2 border rounded-lg text-xs font-bold text-center transition-all cursor-pointer truncate ${letterheadDesign === des.id ? "border-blue-600 bg-blue-50/20 text-blue-700" : "border-slate-200 bg-white"}`}>{des.label}</button>
               ))}
-
-              {productId === "notebook" && NOTEBOOK_DESIGNS.map((des) => (
-                <button key={des.id} type="button" onClick={() => setNotebookDesign(des.id)} className={`py-1.5 px-2 border rounded-lg text-xs font-bold text-center transition-all cursor-pointer truncate ${notebookDesign === des.id ? "border-blue-600 bg-blue-50/20 text-blue-700" : "border-slate-200 bg-white"}`}>{des.label}</button>
-              ))}
             </div>
           </div>
 
@@ -742,10 +709,6 @@ export default function OtherCustomizers({ productId }) {
 
               {productId === "letterhead" && ["A4", "US Letter", "A5 Compact"].map((sz) => (
                 <button key={sz} type="button" onClick={() => setLetterheadSize(sz)} className={`py-1.5 px-2 border rounded-lg text-xs font-bold text-center transition-all cursor-pointer ${letterheadSize === sz ? "border-blue-600 bg-blue-50/20 text-blue-700" : "border-slate-200 bg-white"}`}>{sz}</button>
-              ))}
-
-              {productId === "notebook" && ["A5", "A4", "Pocket size"].map((sz) => (
-                <button key={sz} type="button" onClick={() => setNotebookSize(sz)} className={`py-1.5 px-2 border rounded-lg text-xs font-bold text-center transition-all cursor-pointer ${notebookSize === sz ? "border-blue-600 bg-blue-50/20 text-blue-700" : "border-slate-200 bg-white"}`}>{sz}</button>
               ))}
             </div>
           </div>
@@ -1088,79 +1051,6 @@ export default function OtherCustomizers({ productId }) {
             </div>
           )}
 
-          {productId === "notebook" && (
-            <div className="space-y-3">
-              <div className="space-y-1.5">
-                <span className="text-xs font-bold text-slate-400 block uppercase">Notebook Cover Graphic</span>
-                <div className="flex gap-2">
-                  <button type="button" onClick={triggerFileSelect} className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-3 rounded-lg text-xs transition-colors cursor-pointer flex items-center justify-center gap-1.5">
-                    <FaUpload />
-                    <span>Upload Cover Graphic</span>
-                  </button>
-                  {notebookImage.url && (
-                    <button type="button" onClick={clearImage} className="bg-red-50 hover:bg-red-100 border border-red-200 text-red-600 font-bold py-2 px-3 rounded-lg text-xs transition-colors cursor-pointer">
-                      Remove
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {notebookImage.url && (
-                <div className="bg-slate-50/50 p-3 rounded-xl border border-slate-200/50 space-y-2.5 text-xs">
-                  <div>
-                    <div className="flex justify-between font-bold text-slate-500 mb-0.5">
-                      <span>Cover Zoom</span>
-                      <span>{notebookImage.zoom.toFixed(1)}x</span>
-                    </div>
-                    <input type="range" min="0.5" max="5.0" step="0.1" value={notebookImage.zoom} onChange={(e) => handleNotebookImageUpdate({ zoom: parseFloat(e.target.value) })} />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between font-bold text-slate-500 mb-0.5">
-                      <span>Horizontal Shift</span>
-                      <span>{notebookImage.xOffset}px</span>
-                    </div>
-                    <input type="range" min="-100" max="100" value={notebookImage.xOffset} onChange={(e) => handleNotebookImageUpdate({ xOffset: parseInt(e.target.value) })} />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between font-bold text-slate-500 mb-0.5">
-                      <span>Vertical Shift</span>
-                      <span>{notebookImage.yOffset}px</span>
-                    </div>
-                    <input type="range" min="-100" max="100" value={notebookImage.yOffset} onChange={(e) => handleNotebookImageUpdate({ yOffset: parseInt(e.target.value) })} />
-                  </div>
-
-                  <div>
-                    <div className="flex justify-between font-bold text-slate-500 mb-0.5">
-                      <span>Rotation</span>
-                      <span>{notebookImage.rotation}°</span>
-                    </div>
-                    <input type="range" min="0" max="360" value={notebookImage.rotation} onChange={(e) => handleNotebookImageUpdate({ rotation: parseInt(e.target.value) })} />
-                  </div>
-                </div>
-              )}
-
-              <div className="space-y-1.5">
-                <span className="text-xs font-bold text-slate-400 block uppercase">Spiral Wire Accent Accent</span>
-                <div className="flex gap-2">
-                  {[
-                    { val: "#c0c0c0", name: "Silver" },
-                    { val: "#d4af37", name: "Gold" },
-                    { val: "#000000", name: "Black" },
-                  ].map((wire) => (
-                    <button key={wire.val} type="button" onClick={() => setNotebookWire(wire.val)} className={`py-1 px-3 border rounded-lg text-xs font-bold flex-1 ${notebookWire === wire.val ? "border-blue-600 bg-blue-50/20 text-blue-700" : "border-slate-200 bg-white"}`}>{wire.name}</button>
-                  ))}
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <span className="text-xs font-bold text-slate-400 block uppercase">Diary Cover Title</span>
-                <input type="text" value={notebookTitle} onChange={(e) => setNotebookTitle(e.target.value)} placeholder="Type notebook title" className="w-full text-xs font-semibold border border-slate-200 rounded-lg p-2 outline-none" />
-              </div>
-            </div>
-          )}
-
           <div className="pt-1">
             <button
               type="button"
@@ -1170,17 +1060,14 @@ export default function OtherCustomizers({ productId }) {
                 setPlateDesign("rectangle");
                 setFrameDesign("oak");
                 setLetterheadDesign("modern");
-                setNotebookDesign("classic");
                 setMugSize("11 Oz");
                 setPenSize("Standard");
                 setPlateSize('12" x 6"');
                 setFrameSize('16" x 16"');
                 setLetterheadSize("A4");
-                setNotebookSize("A5");
                 setMugImage({ url: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 });
                 setPenImage({ url: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 });
                 setLetterheadImage({ url: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 });
-                setNotebookImage({ url: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 });
                 setFrameImages({
                   0: { url: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 },
                   1: { url: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 },
@@ -1199,8 +1086,6 @@ export default function OtherCustomizers({ productId }) {
                 setPlateTitleColor("#1e293b");
                 setPlateSubtitleColor("#64748b");
                 setPlateMounts("#d4af37");
-                setNotebookTitle("My Daily Thoughts");
-                setNotebookWire("#c0c0c0");
                 setLetterheadName("Acme Corporation");
                 setLetterheadAddress("123 Innovation Way, Tech Park");
               }}

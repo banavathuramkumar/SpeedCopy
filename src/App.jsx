@@ -26,7 +26,6 @@ export default function App() {
               {currentView === "plate" && "Name Plate"}
               {currentView === "frame" && "Collage Frame"}
               {currentView === "letterhead" && "Letterhead"}
-              {currentView === "notebook" && "Notebook"}
             </span>
           </div>
         </header>

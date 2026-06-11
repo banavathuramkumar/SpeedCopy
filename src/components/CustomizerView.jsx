@@ -10,7 +10,8 @@ import {
   FaClock, 
   FaFont, 
   FaImage,
-  FaRulerCombined
+  FaRulerCombined,
+  FaCube
 } from "react-icons/fa";
 
 const PRESET_COLORS = [
@@ -58,6 +59,16 @@ export default function CustomizerView() {
   const dispatch = useDispatch();
   const fileInputRef = useRef(null);
   const [showAllShapes, setShowAllShapes] = useState(false);
+  const [is3D, setIs3D] = useState(false);
+
+  const get3DStyle = () => {
+    if (!is3D) return { transition: "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)" };
+    return {
+      transformStyle: "preserve-3d",
+      transition: "transform 0.6s cubic-bezier(0.16, 1, 0.3, 1)",
+      filter: "drop-shadow(15px 20px 25px rgba(15, 23, 42, 0.15))"
+    };
+  };
   
   const session = useSelector((state) => state.clock.customizerSession);
   
@@ -105,6 +116,19 @@ export default function CustomizerView() {
 
   return (
     <div className="max-w-7xl mx-auto px-1 py-1 fade-in-up">
+      <style>{`
+        @keyframes rotate3d {
+          from {
+            transform: perspective(1000px) rotateX(15deg) rotateY(0deg) rotateZ(3deg);
+          }
+          to {
+            transform: perspective(1000px) rotateX(15deg) rotateY(360deg) rotateZ(3deg);
+          }
+        }
+        .animate-rotate-3d {
+          animation: rotate3d 16s linear infinite;
+        }
+      `}</style>
       <input
         type="file"
         ref={fileInputRef}
@@ -115,17 +139,40 @@ export default function CustomizerView() {
 
       <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         {/* Left Column: Interactive Clock Preview Sandbox */}
-        <div className="lg:col-span-6 bg-white rounded-3xl border border-slate-200/60 shadow-md p-5 flex flex-col items-center justify-center h-full">
-          
-          {/* Main Interactive Studio Canvas */}
-          <div className="w-full max-w-[400px]">
-            <ClockPreview 
-              onSelectPhoto={triggerFileSelect} 
-              onRemovePhoto={() => {
-                updateSession({ image: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 });
-                if (fileInputRef.current) fileInputRef.current.value = "";
-              }} 
+        <div className="lg:col-span-6 bg-white rounded-3xl border border-slate-200/60 shadow-md p-5 flex flex-col items-center justify-center h-full min-h-[460px] relative overflow-hidden">
+          <button
+            type="button"
+            onClick={() => setIs3D(!is3D)}
+            className={`absolute top-4 right-4 z-10 py-1.5 px-3 rounded-full text-[10px] font-bold uppercase tracking-wider transition-all shadow-xs border flex items-center gap-1.5 cursor-pointer ${
+              is3D 
+                ? "bg-blue-600 border-blue-600 text-white shadow-md shadow-blue-500/20" 
+                : "bg-white border-slate-200 text-slate-600 hover:bg-slate-50"
+            }`}
+          >
+            <FaCube />
+            <span>{is3D ? "3D View Active" : "View in 3D"}</span>
+          </button>
+
+          {is3D && (
+            <div 
+              className="absolute bottom-12 w-1/2 h-4 bg-slate-900/10 rounded-full blur-md transition-all duration-700 pointer-events-none"
+              style={{
+                transform: "rotateX(75deg)",
+                mixBlendMode: "multiply"
+              }}
             />
+          )}
+
+          <div style={get3DStyle()} className={is3D ? "animate-rotate-3d w-full flex justify-center" : "w-full flex justify-center"}>
+            <div className="w-full max-w-[400px]">
+              <ClockPreview 
+                onSelectPhoto={triggerFileSelect} 
+                onRemovePhoto={() => {
+                  updateSession({ image: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 });
+                  if (fileInputRef.current) fileInputRef.current.value = "";
+                }} 
+              />
+            </div>
           </div>
         </div>
 
