@@ -1,4 +1,4 @@
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { updateCustomizerSession, resetCustomizerSession } from "../store/clockSlice";
 import ClockPreview from "./ClockPreview";
@@ -57,6 +57,7 @@ const WALL_BACKGROUNDS = [
 export default function CustomizerView() {
   const dispatch = useDispatch();
   const fileInputRef = useRef(null);
+  const [showAllShapes, setShowAllShapes] = useState(false);
   
   const session = useSelector((state) => state.clock.customizerSession);
   
@@ -112,26 +113,24 @@ export default function CustomizerView() {
         onChange={handleFileChange}
       />
 
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 items-stretch">
         {/* Left Column: Interactive Clock Preview Sandbox */}
-        <div className="lg:col-span-6 flex flex-col items-center">
+        <div className="lg:col-span-6 bg-white rounded-3xl border border-slate-200/60 shadow-md p-5 flex flex-col items-center justify-center h-full">
           
           {/* Main Interactive Studio Canvas */}
-          <div className="w-full bg-slate-900/5 border border-slate-200/80 rounded-3xl p-4 relative flex items-center justify-center min-h-[360px] sm:min-h-[460px]">
-            <div className="w-full max-w-[400px]">
-              <ClockPreview 
-                onSelectPhoto={triggerFileSelect} 
-                onRemovePhoto={() => {
-                  updateSession({ image: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 });
-                  if (fileInputRef.current) fileInputRef.current.value = "";
-                }} 
-              />
-            </div>
+          <div className="w-full max-w-[400px]">
+            <ClockPreview 
+              onSelectPhoto={triggerFileSelect} 
+              onRemovePhoto={() => {
+                updateSession({ image: null, zoom: 1.0, xOffset: 0, yOffset: 0, rotation: 0 });
+                if (fileInputRef.current) fileInputRef.current.value = "";
+              }} 
+            />
           </div>
         </div>
 
         {/* Right Column: Customizer Sidebar Options Panel */}
-        <div className="lg:col-span-6 bg-white rounded-3xl border border-slate-200/60 shadow-md p-5 flex flex-col gap-4">
+        <div className="lg:col-span-6 bg-white rounded-3xl border border-slate-200/60 shadow-md p-5 flex flex-col gap-4 h-full">
           
           <div>
             <h2 className="font-heading font-black text-xl text-slate-900 leading-tight">
@@ -144,12 +143,21 @@ export default function CustomizerView() {
 
           {/* 1. Choose Shape Preset */}
           <div className="space-y-1.5">
-            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
-              <FaShapes className="text-slate-500" />
-              <span>Select Clock Shape</span>
-            </h3>
+            <div className="flex justify-between items-center">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 flex items-center gap-1.5">
+                <FaShapes className="text-slate-500" />
+                <span>1. Select Clock Shape</span>
+              </h3>
+              <button
+                type="button"
+                onClick={() => setShowAllShapes(!showAllShapes)}
+                className="text-xs font-bold text-blue-600 hover:text-blue-700 transition-colors cursor-pointer"
+              >
+                {showAllShapes ? "Show less" : "View all"}
+              </button>
+            </div>
             <div className="grid grid-cols-3 gap-2">
-              {SHAPES.map((sh) => (
+              {(showAllShapes ? SHAPES : SHAPES.slice(0, 3)).map((sh) => (
                 <button
                   key={sh.id}
                   type="button"
